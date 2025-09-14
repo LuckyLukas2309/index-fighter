@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Choose Your Fighter – Arbeitsmodelle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f1115; --panel:#151924; --card:#1b2230; --muted:#8aa0b6; --accent:#4f8cff; --good:#4ade80; --warn:#f59e0b; --bad:#ef4444;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,#0d0f14,#0f1115);color:#e6eef8;font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:1200px;margin:24px auto;padding:0 16px}
+  header{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:16px}
+  h1{font-size:24px;margin:0;font-weight:800;letter-spacing:.3px}
+  .sub{opacity:.8;font-size:13px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(min-width:980px){.layout{display:grid;grid-template-columns:2fr 1fr;gap:18px;align-items:start}}
+  .card{background:var(--card);border:1px solid #223049;border-radius:14px;box-shadow:0 6px 30px rgba(0,0,0,.25);overflow:hidden;position:relative}
+  .card .head{display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid #233246;background:linear-gradient(180deg,#1d2636,#182234)}
+  .card img{width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid #2b3b55;background:#0f141e}
+  .badge{font-size:11px;padding:3px 8px;border-radius:999px;background:#24364f;border:1px solid #2d4666;color:#b9d1ff}
+  .name{font-weight:800;font-size:16px}
+  .stats{padding:12px}
+  .stat{margin:8px 0}
+  .label{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px}
+  .bar{height:10px;border-radius:999px;background:#0f1623;border:1px solid #243349;overflow:hidden}
+  .fill{height:100%;width:0%;background:linear-gradient(90deg,#4f8cff,#7cc5ff)}
+  .panel{background:var(--panel);border:1px solid #243349;border-radius:14px;padding:14px;position:sticky;top:12px}
+  .panel h2{margin:0 0 8px 0;font-size:18px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+  select, input[type="range"], input[type="text"], button{
+    width:100%;background:#111827;color:#e6eef8;border:1px solid #2a3a55;border-radius:10px;padding:10px;font-size:13px;
+  }
+  input[type="range"]{appearance:none;height:8px;padding:0;background:#0f1623;border-radius:999px}
+  input[type="range"]::-webkit-slider-thumb{appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);border:2px solid #9cc5ff;cursor:pointer}
+  .sl{margin:8px 0}
+  .mini{font-size:12px;color:var(--muted)}
+  .btn{cursor:pointer;background:linear-gradient(180deg,#2757ff,#1b46d8);border-color:#2b4fff}
+  .btn.secondary{background:#1a2435;border-color:#2a3a55}
+  .btn.warn{background:linear-gradient(180deg,#f59e0b,#d97706);border-color:#b45309}
+  .btn.good{background:linear-gradient(180deg,#22c55e,#16a34a);border-color:#15803d}
+  .btn.block{display:block;width:100%}
+  .stat-legend{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;font-size:11px;color:#9db1c8;margin-top:8px}
+  .foot{display:flex;gap:8px;margin-top:10px}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Choose Your Fighter: Arbeitsmodelle</h1>
+        <div class="sub">Regle pro Figur die Werte für <strong>Sicherheit</strong>, <strong>Risiko</strong>, <strong>Flexibilität</strong>, <strong>Einkommen</strong>, <strong>Planbarkeit</strong>. Alles speichert sich automatisch.</div>
+      </div>
+      <div class="foot">
+        <button class="btn secondary" id="resetAll">Alles zurücksetzen</button>
+        <button class="btn" id="exportPng">Export als PNG</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <!-- Fighter Grid -->
+      <section>
+        <div class="grid" id="grid"></div>
+      </section>
+
+      <!-- Control Panel -->
+      <aside class="panel">
+        <h2>Steuerpult</h2>
+        <label class="mini">Figur wählen</label>
+        <select id="fighterSelect"></select>
+
+        <div class="sl">
+          <label class="mini">Sicherheit: <span id="vSicherheit">0</span></label>
+          <input type="range" id="rSicherheit" min="0" max="100" step="1">
+        </div>
+        <div class="sl">
+          <label class="mini">Risiko: <span id="vRisiko">0</span></label>
+          <input type="range" id="rRisiko" min="0" max="100" step="1">
+        </div>
+        <div class="sl">
+          <label class="mini">Flexibilität: <span id="vFlex">0</span></label>
+          <input type="range" id="rFlex" min="0" max="100" step="1">
+        </div>
+        <div class="sl">
+          <label class="mini">Einkommen: <span id="vIncome">0</span></label>
+          <input type="range" id="rIncome" min="0" max="100" step="1">
+        </div>
+        <div class="sl">
+          <label class="mini">Planbarkeit: <span id="vPlan">0</span></label>
+          <input type="range" id="rPlan" min="0" max="100" step="1">
+        </div>
+
+        <div class="row">
+          <button class="btn good" id="applyPreset">Preset (typisch)</button>
+          <button class="btn secondary" id="swapImg">Bild-URL ändern</button>
+        </div>
+        <div class="row">
+          <button class="btn warn" id="resetOne">Nur diese Figur zurücksetzen</button>
+          <button class="btn secondary" id="toggleLabels">Labels ein/aus</button>
+        </div>
+
+        <div class="stat-legend">
+          <div>0</div><div>25</div><div>50</div><div>75</div><div>100</div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- html2canvas for export -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script>
+    // --- Data model ---
+    const fighters = [
+      { id:'beamte', name:'Beamtin/Beamter', badge:'Status: BeamtStG',
+        img:'https://images.unsplash.com/photo-1551836022-d5d88e9218df?q=80&w=600&auto=format&fit=crop',
+        stats:{sicherheit:90, risiko:10, flex:30, income:70, plan:90} },
+      { id:'unbefristet', name:'Unbefristet angestellt', badge:'Normalarbeitsverhältnis',
+        img:'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=600&auto=format&fit=crop',
+        stats:{sicherheit:75, risiko:25, flex:40, income:65, plan:75} },
+      { id:'befristet', name:'Befristet beschäftigt', badge:'TzBfG',
+        img:'https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=600&auto=format&fit=crop',
+        stats:{sicherheit:35, risiko:70, flex:55, income:55, plan:30} },
+      { id:'minijob', name:'Minijob/Teilzeit', badge:'Atypisch',
+        img:'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=600&auto=format&fit=crop',
+        stats:{sicherheit:30, risiko:60, flex:70, income:30, plan:40} },
+      { id:'leiharbeit', name:'Leiharbeit/Zeitarbeit', badge:'AÜG',
+        img:'https://images.unsplash.com/photo-1581090464777-f3220bbe1b8b?q=80&w=600&auto=format&fit=crop',
+        stats:{sicherheit:40, risiko:65, flex:60, income:45, plan:35} },
+      { id:'selbst', name:'Selbstständig', badge:'Solo/Freiberuf',
+        img:'https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=600&auto=format&fit=crop',
+        stats:{sicherheit:25, risiko:75, flex:90, income:60, plan:35} },
+    ];
+
+    const STORAGE_KEY = 'fighterScreenV1';
+    // Load from storage
+    const loadState = () => {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return;
+      try{
+        const saved = JSON.parse(raw);
+        fighters.forEach(f => {
+          if(saved[f.id]) f.stats = saved[f.id].stats || f.stats;
+          if(saved[f.id]?.img) f.img = saved[f.id].img;
+        });
+      }catch(e){}
+    };
+    const saveState = () => {
+      const obj = {};
+      fighters.forEach(f=>obj[f.id]={stats:f.stats,img:f.img});
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
+    };
+
+    // Build UI
+    const grid = document.getElementById('grid');
+    const fighterSelect = document.getElementById('fighterSelect');
+    const rS = document.getElementById('rSicherheit');
+    const rR = document.getElementById('rRisiko');
+    const rF = document.getElementById('rFlex');
+    const rI = document.getElementById('rIncome');
+    const rP = document.getElementById('rPlan');
+    const vS = document.getElementById('vSicherheit');
+    const vR = document.getElementById('vRisiko');
+    const vF = document.getElementById('vFlex');
+    const vI = document.getElementById('vIncome');
+    const vP = document.getElementById('vPlan');
+
+    let showLabels = true;
+    let currentId = fighters[0].id;
+
+    const cardMap = new Map();
+
+    function makeCard(f){
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.id = `card-${f.id}`;
+      el.innerHTML = `
+        <div class="head">
+          <img src="${f.img}" alt="${f.name}" id="img-${f.id}">
+          <div>
+            <div class="badge">${f.badge}</div>
+            <div class="name">${f.name}</div>
+          </div>
+        </div>
+        <div class="stats">
+          ${makeStat('Sicherheit','sicherheit', f.stats.sicherheit)}
+          ${makeStat('Risiko','risiko', f.stats.risiko)}
+          ${makeStat('Flexibilität','flex', f.stats.flex)}
+          ${makeStat('Einkommen','income', f.stats.income)}
+          ${makeStat('Planbarkeit','plan', f.stats.plan)}
+        </div>`;
+      grid.appendChild(el);
+      cardMap.set(f.id, el);
+    }
+
+    function makeStat(label, key, val){
+      return `
+        <div class="stat" data-key="${key}">
+          <div class="label"><span>${label}</span><span class="val">${val}</span></div>
+          <div class="bar"><div class="fill" style="width:${val}%"></div></div>
+        </div>`;
+    }
+
+    function renderAll(){
+      grid.innerHTML = '';
+      fighters.forEach(makeCard);
+      fighters.forEach(f=>{
+        const card = cardMap.get(f.id);
+        const stats = card.querySelectorAll('.stat');
+        stats.forEach(st=>{
+          const key = st.dataset.key;
+          const val = f.stats[key];
+          st.querySelector('.fill').style.width = val+'%';
+          st.querySelector('.val').textContent = showLabels ? val : '';
+        });
+        const im = card.querySelector(`#img-${f.id}`);
+        im.src = f.img;
+      });
+      saveState();
+    }
+
+    function populateSelect(){
+      fighterSelect.innerHTML = fighters.map(f=>`<option value="${f.id}">${f.name}</option>`).join('');
+      fighterSelect.value = currentId;
+    }
+
+    function syncSliders(){
+      const f = fighters.find(x=>x.id===currentId);
+      rS.value = f.stats.sicherheit; vS.textContent = f.stats.sicherheit;
+      rR.value = f.stats.risiko;     vR.textContent = f.stats.risiko;
+      rF.value = f.stats.flex;       vF.textContent = f.stats.flex;
+      rI.value = f.stats.income;     vI.textContent = f.stats.income;
+      rP.value = f.stats.plan;       vP.textContent = f.stats.plan;
+    }
+
+    function updateStat(key, val){
+      const f = fighters.find(x=>x.id===currentId);
+      f.stats[key] = Number(val);
+      const card = cardMap.get(f.id);
+      const st = card.querySelector(`.stat[data-key="${key}"]`);
+      st.querySelector('.fill').style.width = val+'%';
+      st.querySelector('.val').textContent = showLabels ? val : '';
+      saveState();
+    }
+
+    // Presets (typische Einschätzung – frei anpassbar)
+    const presets = {
+      beamte:{sicherheit:90, risiko:10, flex:30, income:70, plan:90},
+      unbefristet:{sicherheit:75, risiko:25, flex:40, income:65, plan:75},
+      befristet:{sicherheit:35, risiko:70, flex:55, income:55, plan:30},
+      minijob:{sicherheit:30, risiko:60, flex:70, income:30, plan:40},
+      leiharbeit:{sicherheit:40, risiko:65, flex:60, income:45, plan:35},
+      selbst:{sicherheit:25, risiko:75, flex:90, income:60, plan:35},
+    };
+
+    // Events
+    fighterSelect.addEventListener('change', e=>{
+      currentId = e.target.value; syncSliders();
+    });
+
+    rS.addEventListener('input', e=>{ vS.textContent = e.target.value; updateStat('sicherheit', e.target.value); });
+    rR.addEventListener('input', e=>{ vR.textContent = e.target.value; updateStat('risiko', e.target.value); });
+    rF.addEventListener('input', e=>{ vF.textContent = e.target.value; updateStat('flex', e.target.value); });
+    rI.addEventListener('input', e=>{ vI.textContent = e.target.value; updateStat('income', e.target.value); });
+    rP.addEventListener('input', e=>{ vP.textContent = e.target.value; updateStat('plan', e.target.value); });
+
+    document.getElementById('applyPreset').addEventListener('click', ()=>{
+      const f = fighters.find(x=>x.id===currentId);
+      f.stats = {...presets[currentId]};
+      syncSliders(); renderAll();
+    });
+
+    document.getElementById('swapImg').addEventListener('click', ()=>{
+      const url = prompt('Bild-URL für diese Figur eingeben (https://...)');
+      if(!url) return;
+      const f = fighters.find(x=>x.id===currentId);
+      f.img = url;
+      renderAll();
+    });
+
+    document.getElementById('resetOne').addEventListener('click', ()=>{
+      if(!confirm('Nur diese Figur zurücksetzen?')) return;
+      const f = fighters.find(x=>x.id===currentId);
+      f.stats = {...presets[currentId]};
+      // optional: Bild zurücksetzen? -> ja:
+      f.img = defaultImages[f.id] || f.img;
+      syncSliders(); renderAll();
+    });
+
+    document.getElementById('toggleLabels').addEventListener('click', ()=>{
+      showLabels = !showLabels;
+      document.querySelectorAll('.stat .val').forEach(v=>v.textContent = showLabels ? v.textContent : '');
+      renderAll();
+    });
+
+    document.getElementById('resetAll').addEventListener('click', ()=>{
+      if(!confirm('Alle Figuren auf Preset zurücksetzen?')) return;
+      fighters.forEach(f=>f.stats = {...presets[f.id]});
+      fighters.forEach(f=>f.img = defaultImages[f.id] || f.img);
+      renderAll(); syncSliders();
+    });
+
+    document.getElementById('exportPng').addEventListener('click', async ()=>{
+      const node = document.querySelector('.layout');
+      const canvas = await html2canvas(node, {backgroundColor:'#0f1115', scale:2, useCORS:true});
+      const link = document.createElement('a');
+      link.download = 'fighter-screen.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+
+    // default images mapping if needed for resetOne/resetAll
+    const defaultImages = {};
+    fighters.forEach(f=>defaultImages[f.id]=f.img);
+
+    // init
+    loadState();
+    renderAll();
+    populateSelect();
+    syncSliders();
+  </script>
+</body>
+</html>
